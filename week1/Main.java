@@ -21,6 +21,8 @@ public class Main {
          */
         KeyPair pk_scrooge = KeyPairGenerator.getInstance("RSA").generateKeyPair();
         KeyPair pk_alice   = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+        KeyPair pk_bob     = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+        KeyPair pk_charles = KeyPairGenerator.getInstance("RSA").generateKeyPair();
 
         /*
          * Set up the root transaction:
@@ -48,8 +50,10 @@ public class Main {
         utxoPool.addUTXO(utxo, tx.getOutput(0));
 
         /*
-         * Set up a test Transaction
+         * Set up test transactions
          */
+
+        // Scrooge 10 => Alice 5, Bob 3, Charles 2
         Tx tx2 = new Tx();
 
         // the Transaction.Output of tx at position 0 has a value of 10
@@ -58,8 +62,8 @@ public class Main {
         // I split the coin of value 10 into 3 coins and send all of them for simplicity to
         // the same address (Alice)
         tx2.addOutput(5, pk_alice.getPublic());
-        tx2.addOutput(3, pk_alice.getPublic());
-        tx2.addOutput(2, pk_alice.getPublic());
+        tx2.addOutput(3, pk_bob.getPublic());
+        tx2.addOutput(2, pk_charles.getPublic());
         // Note that in the real world fixed-point types would be used for the values, not doubles.
         // Doubles exhibit floating-point rounding errors. This type should be for example BigInteger
         // and denote the smallest coin fractions (Satoshi in Bitcoin).
@@ -68,6 +72,23 @@ public class Main {
         // and it contains the coin from Scrooge, therefore I have to sign with the private key from Scrooge
         tx2.signTx(pk_scrooge.getPrivate(), 0);
 
+        // Alice 5, Bob 3 => Charles 8
+        Tx tx3 = new Tx();
+        tx3.addInput(tx2.getHash(), 0);
+        tx3.addInput(tx2.getHash(), 1);
+        tx3.addOutput(8, pk_charles.getPublic());
+        tx3.signTx(pk_alice.getPrivate(), 0);
+        tx3.signTx(pk_bob.getPrivate(), 1);
+
+        // Charles 2, Charles 8 => Alice 6, Bob 4
+        Tx tx4 = new Tx();
+        tx4.addInput(tx2.getHash(), 2);
+        tx4.addInput(tx3.getHash(), 0);
+        tx4.addOutput(6, pk_alice.getPublic());
+        tx4.addOutput(4, pk_bob.getPublic());
+        tx4.signTx(pk_charles.getPrivate(), 0);
+        tx4.signTx(pk_charles.getPrivate(), 1);
+
         /*
          * Start the test
          */
@@ -75,8 +96,10 @@ public class Main {
         // the coin from Scrooge.
         TxHandler txHandler = new TxHandler(utxoPool);
         System.out.println("txHandler.isValidTx(tx2) returns: " + txHandler.isValidTx(tx2));
-        System.out.println("txHandler.handleTxs(new Transaction[]{tx2}) returns: " +
-            txHandler.handleTxs(new Transaction[]{tx2}).length + " transaction(s)");
+        System.out.println("txHandler.isValidTx(tx3) returns: " + txHandler.isValidTx(tx3));
+        System.out.println("txHandler.isValidTx(tx4) returns: " + txHandler.isValidTx(tx4));
+        System.out.println("txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4}) returns: " +
+            txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4}).length + " transaction(s)");
     }
 
 
