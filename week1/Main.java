@@ -98,8 +98,8 @@ public class Main {
         System.out.println("txHandler.isValidTx(tx2) returns: " + txHandler.isValidTx(tx2));
         System.out.println("txHandler.isValidTx(tx3) returns: " + txHandler.isValidTx(tx3));
         System.out.println("txHandler.isValidTx(tx4) returns: " + txHandler.isValidTx(tx4));
-        System.out.println("txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4}) returns: " +
-            txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4}).length + " transaction(s)");
+        System.out.println("txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4, tx4}) returns: " +
+            txHandler.handleTxs(new Transaction[]{tx2, tx3, tx4, tx4}).length + " transaction(s)");
     }
 
 

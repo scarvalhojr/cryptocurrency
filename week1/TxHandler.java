@@ -90,6 +90,13 @@ public class TxHandler {
             while(iter.hasNext()){
                 Transaction tx = iter.next();
 
+                if (processed.contains(tx)) {
+                    // this transaction has already been processed
+                    iter.remove();
+                    processed.add(tx);
+                    continue;
+                }
+
                 if (isValidTx(tx)) {
                     for (Transaction.Input tx_in : tx.getInputs())
                         utxoPool.removeUTXO(new UTXO(tx_in.prevTxHash, tx_in.outputIndex));
